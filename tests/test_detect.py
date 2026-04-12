@@ -236,3 +236,12 @@ def test_detect_video_not_in_words(tmp_path):
     result = detect(tmp_path)
     # Only video file present — total_words should be 0
     assert result["total_words"] == 0
+
+
+def test_detect_does_not_skip_normal_docs_with_secrets_in_title(tmp_path):
+    """Natural-language docs mentioning 'Secrets' should not be treated as secret files."""
+    doc = tmp_path / "The-Secrets-To-Selecting-High-Reward-Setups.md"
+    doc.write_text("# Notes\n\nThis is a normal transcript document.\n")
+    result = detect(tmp_path)
+    assert any(doc.name in f for f in result["files"]["document"])
+    assert result["skipped_sensitive"] == []
