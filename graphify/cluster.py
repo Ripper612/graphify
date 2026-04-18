@@ -39,7 +39,10 @@ def _partition(G: nx.Graph) -> dict[str, int]:
         finally:
             sys.stderr = old_stderr
         return result
-    except ImportError:
+    except (ImportError, OSError):
+        # On some Windows machines graspologic can fail during import with
+        # provider initialization errors before leiden() is available.
+        # Fall back to the deterministic NetworkX path instead of failing.
         pass
 
     # Fallback: networkx louvain (available since networkx 2.7).

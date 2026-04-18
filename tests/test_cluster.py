@@ -74,3 +74,18 @@ def test_cluster_does_not_write_to_stderr(capsys):
     # Allow logging output (starts with [graphify]) but no raw ANSI codes
     for line in captured.err.splitlines():
         assert "\x1b" not in line, f"cluster() wrote ANSI to stderr: {line!r}"
+
+
+def test_cluster_falls_back_when_graspologic_import_raises_oserror(monkeypatch):
+    real_import = __import__
+
+    def broken_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "graspologic.partition":
+            raise OSError("provider init failed")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr("builtins.__import__", broken_import)
+    G = make_graph()
+    communities = cluster(G)
+    all_nodes = {n for nodes in communities.values() for n in nodes}
+    assert all_nodes == set(G.nodes)
