@@ -137,3 +137,14 @@ def test_community_article_truncation_notice(tmp_path):
     to_wiki(G, communities, tmp_path, community_labels={0: "Big Community"})
     article = (tmp_path / "Big_Community.md").read_text()
     assert "and 5 more nodes" in article
+
+
+def test_to_wiki_sanitizes_windows_invalid_filename_chars(tmp_path):
+    G = _make_graph()
+    labels = {0: 'Parser/Core\\Layer:Alpha*?"<>|', 1: "Rendering Layer"}
+    god_nodes = [{"id": "n1", "label": 'parse/core\\node:beta*?"<>|', "edges": 2}]
+
+    to_wiki(G, COMMUNITIES, tmp_path, community_labels=labels, god_nodes_data=god_nodes)
+
+    assert (tmp_path / "Parser-Core-Layer-Alpha------.md").exists()
+    assert (tmp_path / "parse-core-node-beta------.md").exists()

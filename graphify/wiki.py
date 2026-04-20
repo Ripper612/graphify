@@ -7,7 +7,20 @@ import networkx as nx
 
 
 def _safe_filename(name: str) -> str:
-    return name.replace("/", "-").replace(" ", "_").replace(":", "-")
+    # Windows forbids \ / : * ? " < > | in filenames; labels may contain slashes/backslashes.
+    s = (
+        name.replace("\\", "-")
+        .replace("/", "-")
+        .replace(":", "-")
+        .replace("*", "-")
+        .replace("?", "-")
+        .replace('"', "-")
+        .replace("<", "-")
+        .replace(">", "-")
+        .replace("|", "-")
+        .replace(" ", "_")
+    )
+    return s
 
 
 def _cross_community_links(G: nx.Graph, nodes: list[str], own_cid: int, labels: dict[int, str]) -> list[tuple[str, int]]:
